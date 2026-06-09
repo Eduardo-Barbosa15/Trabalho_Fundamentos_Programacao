@@ -55,14 +55,18 @@ void baixar_dados_discentes_txt(FILE* dados_discentes, discente discentes[])
     fclose(dados_discentes);
 }
 
-void lista_discentes(discente discentes[])
+void lista_discentes(discente discentes[], FILE* num_cadastros)
 {
+    int j;
+    num_cadastros = fopen("num_cadastros.txt", "r");
+    fscanf(num_cadastros, "%d", &j);
+    fclose(num_cadastros);
     if (discentes[0].nome[0] == ' ')
     {
         printf("Nenhum discente cadastrado.\n");
         return;
     }
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < j; i++)
     {            
             printf("Discente: %d\n", i + 1);
             printf("********************************\n");
@@ -80,24 +84,31 @@ void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* num_c
     int j;
     num_cadastros = fopen("num_cadastros.txt", "r");
     fscanf(num_cadastros, "%d", &j);
-    printf("Posicao do novo discente: %d\n", j);
+    fclose(num_cadastros);
     if (j == 10)
     {
         printf("Limite de discentes atingido. Nao e possivel cadastrar mais discentes.\n");
         return;
     }
+    printf("********************************\n");
     printf("Digite a matricula do discente: ");
     scanf("%d", &discentes[j].matricula);
+    printf("********************************\n");
     for (int i = 0; i < 10; i++)
     {
         if ((discentes[i].matricula == discentes[j].matricula) && (i != j))
         {
+            printf("*******************************************\n");
             printf("Matricula ja cadastrada. Digite novamente: ");
             scanf("%d", &discentes[j].matricula);
+            printf("*******************************************\n");
+            i--;
         }
     }
+    printf("********************************\n");
     printf("Digite o nome do discente: ");
     scanf(" %[^\n]s", &discentes[j].nome);
+    printf("********************************\n");
     if (discentes[j].nome[0] >= 'a' && discentes[j].nome[0] <= 'z')
     {
         discentes[j].nome[0] -= 32;
@@ -169,13 +180,22 @@ void atualizar_frequencias(discente discentes[])
     printf("Discente nao encontrado, tente novamente.\n");
 }
 
-void remove_discente(discente discentes[], FILE* num_cadastros)
+void remove_discente(discente discentes[], FILE* num_cadastros, FILE* dados_discentes)
 {
+    int j;
+    num_cadastros = fopen("num_cadastros.txt", "r");
+    fscanf(num_cadastros, "%d", &j);
+    fclose(num_cadastros);
     int buffer;
     printf("Digite a matricula do discente para remover: ");
     scanf("%d", &buffer);
     for (int i = 0; i < 10; i++)
     {
+        if(j == 0)
+        {
+            printf("Nenhum discente cadastrado.\n");
+            return;
+        }
         if (discentes[i].matricula == buffer)
         {
             discentes[i].matricula = 0;
@@ -278,7 +298,7 @@ int main()
         printf("*********************************\n");
         printf("\nDigite o numero da opcao desejada: ");
         scanf("%d", &opicao);
-        printf("\n");
+        printf("\n*********************************\n");
         if (opicao == 1)
         {
             cadastrar_discente(discentes, dados_discentes, num_cadastros);
@@ -286,7 +306,7 @@ int main()
         }
         if (opicao == 2)
         {
-            lista_discentes(discentes);
+            lista_discentes(discentes, num_cadastros);
         }
         if (opicao == 3)
         {
@@ -300,7 +320,7 @@ int main()
         }
         if (opicao == 5)
         {
-            remove_discente(discentes, num_cadastros);
+            remove_discente(discentes, num_cadastros, dados_discentes);
             salvar_dados_discentes_txt(discentes, dados_discentes);
         }
         if (opicao == 6)
