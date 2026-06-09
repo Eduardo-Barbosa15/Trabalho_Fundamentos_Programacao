@@ -10,7 +10,7 @@ typedef struct
     float notas[3];
 } discente;
 
-void valores_iniciais_local(FILE* dados_discentes, discente discentes[])
+void valores_iniciais(FILE* dados_discentes, discente discentes[])
 {
     for (int j = 0; j < 10; j++)
     {
@@ -22,46 +22,37 @@ void valores_iniciais_local(FILE* dados_discentes, discente discentes[])
             discentes[j].notas[k] = 0.0;
         }
     }
-}
-
-void valores_iniciais_file(FILE* dados_discentes, discente discentes[], FILE* posicoes, fpos_t posicao[])
-{
     dados_discentes = fopen("discentes.txt", "w");
-    posicoes = fopen("posicoes.txt", "w");
     for (int i = 0; i < 10; i++)
     {
         fprintf(dados_discentes, "%d\n", discentes[i].matricula);
         fprintf(dados_discentes, "%s\n", discentes[i].nome);
         fprintf(dados_discentes, "%d\n", discentes[i].num_presencas);
         fprintf(dados_discentes, "%.2f %.2f %.2f\n", discentes[i].notas[0], discentes[i].notas[1], discentes[i].notas[2]);
-        fgetpos(dados_discentes, &posicao[i]);
-        fprintf(posicoes, "%lld\n", posicao[i]);
-            
     }
     fclose(dados_discentes);
-    fclose(posicoes);
 }
 
-void baixar_dados_discentes_txt(FILE* dados_discentes, discente discentes[], fpos_t posicao[], FILE* posicoes)
+void baixar_dados_discentes_txt(FILE* dados_discentes, discente discentes[])
 {
     dados_discentes = fopen("discentes.txt", "r");
-    posicoes = fopen("posicoes.txt", "r");
     char buffer[100];
     int i = 0;
-    while(fscanf(dados_discentes, "%[^\n]\n", &buffer) == 1)
+    while (fgets(buffer, sizeof(buffer), dados_discentes) != NULL) 
     {
         discentes[i].matricula = atoi(buffer);
-        strcpy(discentes[i].nome, buffer);
-        discentes[i].num_presencas = atoi(buffer);
-        for(int j = 0; fscanf(dados_discentes, "%f %f %f\n", &discentes[i].notas[0], &discentes[i].notas[1], &discentes[i].notas[2]) == 3; j++);
+        if (fgets(discentes[i].nome, sizeof(discentes[i].nome), dados_discentes) != NULL) 
+        {
+            discentes[i].nome[strcspn(discentes[i].nome, "\n")] = '\0';
+        }
+        if (fgets(buffer, sizeof(buffer), dados_discentes) != NULL)
+        {
+            discentes[i].num_presencas = atoi(buffer);
+        }
+        fscanf(dados_discentes, "%f %f %f\n", &discentes[i].notas[0], &discentes[i].notas[1], &discentes[i].notas[2]);
         i++;
     }
-    for(int j = 0; j < 10; j++)
-    {
-        fscanf(posicoes, "%lld\n", &posicao[j]);
-    }
     fclose(dados_discentes);
-    fclose(posicoes);
 }
 
 void lista_discentes(discente discentes[])
@@ -78,25 +69,14 @@ void lista_discentes(discente discentes[])
     }
 }
 
-void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* posicoes, fpos_t posicao[])
+void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* num_cadastros)
 {
-    char buffer[100];
     dados_discentes = fopen("dados_discentes.txt", "r");
-    int j = 0;
-    int l = 0;
-    while (l < 10)
-    {
-
-        fsetpos(dados_discentes, &posicao[l]);
-        fscanf(dados_discentes, "%[^\n]\n", &buffer);
-        if (buffer[0] == ' ')
-        {
-            j = l;
-        }
-        l++;
-    }
+    int j;
+    num_cadastros = fopen("num_cadastros.txt", "r");
+    fscanf(num_cadastros, "%d", &j);
     printf("Posicao do novo discente: %d\n", j);
-    if (j == 9)
+    if (j == 10)
     {
         printf("Limite de discentes atingido. Nao e possivel cadastrar mais discentes.\n");
         return;
@@ -105,11 +85,10 @@ void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* posic
     scanf("%d", &discentes[j].matricula);
     for (int i = 0; i < 10; i++)
     {
-        if (discentes[i].matricula == discentes[j].matricula && i != j)
+        if ((discentes[i].matricula == discentes[j].matricula) && (i != j))
         {
             printf("Matricula ja cadastrada. Digite novamente: ");
             scanf("%d", &discentes[j].matricula);
-            i--;
         }
     }
     printf("Digite o nome do discente: ");
@@ -124,6 +103,9 @@ void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* posic
         discentes[j].notas[k] = 0.0;
     }
     printf("Discente %s cadastrado com sucesso.\n", discentes[j].nome);
+    num_cadastros = fopen("num_cadastros.txt", "w");
+    fprintf(num_cadastros, "%d", j + 1);
+    fclose(num_cadastros);
     fclose(dados_discentes);
 }
 
@@ -140,39 +122,72 @@ void salvar_dados_discentes_txt(discente discentes[], FILE* dados_discentes)
     fclose(dados_discentes);
 }
 
-///void atualizar_notas(discente discentes[])
-//{
-//    printf("Digite a matricula do discente para atualizar as notas: ");
-//    scanf("%d", &discentes[0].matricula);
-//    for (int i = 0; i < 10; i++)
-//    {}
-//}
+void atualizar_notas(discente discentes[])
+{
+    char buffer[100];
+    printf("Digite a matricula do discente para atualizar as notas: ");
+    scanf("%d", buffer);
+    for (int i = 0; i < 10; i++)
+    {
+        if (discentes[i].matricula == atoi(buffer))
+        {
+            printf("Digite as novas notas do discente (separadas por espaco): ");
+            scanf("%f %f %f", &discentes[i].notas[0], &discentes[i].notas[1], &discentes[i].notas[2]);
+            printf("Notas do discente %s atualizadas com sucesso.\n", discentes[i].nome);
+            return;
+        }
+    }
+    printf("Discente nao encontrado.\n");
+}
 
 int main()
 {
     discente discentes[10];
-    fpos_t posicao[10];
-    FILE* posicoes = fopen("posicoes.txt", "r");
-    if (posicoes == NULL)
+    FILE* num_cadastros = fopen("num_cadastros.txt", "r");
+    int opicao = 0;
+    if (num_cadastros == NULL)
     {
-        fclose(posicoes);
-        posicoes = fopen("posicoes.txt", "w+");
+        fclose(num_cadastros);
+        num_cadastros = fopen("num_cadastros.txt", "w+");
+        fprintf(num_cadastros, "%d", 0);
     }
-    fclose(posicoes);
+    fclose(num_cadastros);
     FILE* dados_discentes = fopen("discentes.txt", "r");
-    valores_iniciais_local(dados_discentes, discentes);
     if (dados_discentes == NULL)
     {
         fclose(dados_discentes);
-        posicoes = fopen("posicoes.txt", "w+");
-        valores_iniciais_file(dados_discentes, discentes, posicoes, posicao);
+        dados_discentes = fopen("discentes.txt", "w+");
+        valores_iniciais(dados_discentes, discentes);
     }
-    fclose(dados_discentes);
-    dados_discentes = fopen("discentes.txt", "r");
-    baixar_dados_discentes_txt(dados_discentes, discentes, posicao, posicoes);
-    fclose(dados_discentes);
-    cadastrar_discente(discentes, dados_discentes, posicoes, posicao);
-    salvar_dados_discentes_txt(discentes, dados_discentes);
-    lista_discentes(discentes);
+    baixar_dados_discentes_txt(dados_discentes, discentes);
+    while (opicao != 7)
+    {
+        fclose(dados_discentes);
+        printf("Seja bem vindo(a) ao sistema de gerenciamento de discentes!\n");
+        printf("Oque deseja fazer?\n");
+        printf("1 - Cadastrar discente\n");
+        printf("2 - Listar discentes\n");
+        printf("3 - Atualizar notas\n");
+        printf("4 - Atualizar frequncias\n");
+        printf("5 - Remover discente\n");
+        printf("6 - Imprimir relatório\n");
+        printf("7 - Sair\n");
+        printf("Digite o numero da opcao desejada: ");
+        scanf("%d", &opicao);
+        if (opicao == 1)
+        {
+            cadastrar_discente(discentes, dados_discentes, num_cadastros);
+            salvar_dados_discentes_txt(discentes, dados_discentes);
+        }
+        if (opicao == 2)
+        {
+            lista_discentes(discentes);
+        }
+        if (opicao == 3)
+        {
+            atualizar_notas(discentes);
+            salvar_dados_discentes_txt(discentes, dados_discentes);
+        }
+    }
     return 0;
 }
