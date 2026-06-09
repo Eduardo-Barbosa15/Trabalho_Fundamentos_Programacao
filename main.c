@@ -129,20 +129,67 @@ void salvar_dados_discentes_txt(discente discentes[], FILE* dados_discentes)
 
 void atualizar_notas(discente discentes[])
 {
-    char buffer[100];
+    int buffer;
     printf("Digite a matricula do discente para atualizar as notas: ");
-    scanf("%d", buffer);
+    scanf("%d", &buffer);
     for (int i = 0; i < 10; i++)
     {
-        if (discentes[i].matricula == atoi(buffer))
+        if (discentes[i].matricula == buffer)
         {
             printf("Digite as novas notas do discente (separadas por espaco): ");
-            scanf("%f %f %f", &discentes[i - 1].notas[0], &discentes[i - 1].notas[1], &discentes[i -1].notas[2]);
-            printf("Notas do discente %s atualizadas com sucesso.\n", discentes[i -1].nome);
+            scanf("%f %f %f", &discentes[i].notas[0], &discentes[i].notas[1], &discentes[i].notas[2]);
+            printf("Notas do discente %s atualizadas com sucesso.\n", discentes[i].nome);
             return;
         }
     }
-    printf("Discente nao encontrado.\n");
+    printf("Discente nao encontrado, tente novamente.\n");
+}
+
+void atualizar_frequencias(discente discentes[])
+{
+    int buffer;
+    printf("Digite a matricula do discente para atualizar as frequencias: ");
+    scanf("%d", &buffer);
+    for (int i = 0; i < 10; i++)
+    {
+        if (discentes[i].matricula == buffer)
+        {
+            discentes[i].num_presencas++;
+            printf("Frequencias do discente %s atualizadas com sucesso.\n", discentes[i].nome);
+            return;
+        }
+    }
+    printf("Discente nao encontrado, tente novamente.\n");
+}
+
+void remove_discente(discente discentes[], FILE* num_cadastros)
+{
+    int buffer;
+    printf("Digite a matricula do discente para remover: ");
+    scanf("%d", &buffer);
+    for (int i = 0; i < 10; i++)
+    {
+        if (discentes[i].matricula == buffer)
+        {
+            discentes[i].matricula = 0;
+            strcpy(discentes[i].nome, " ");
+            discentes[i].num_presencas = 0;
+            for (int k = 0; k < 3; k++)
+            {
+                discentes[i].notas[k] = 0.0;
+            }
+            num_cadastros = fopen("num_cadastros.txt", "r");
+            int j;
+            fscanf(num_cadastros, "%d", &j);
+            j--;
+            num_cadastros = fopen("num_cadastros.txt", "w");
+            fprintf(num_cadastros, "%d", j);
+            fclose(num_cadastros);
+            printf("Discente removido com sucesso.\n");
+            return;
+        }
+    }
+    printf("Discente nao encontrado, tente novamente.\n");
 }
 
 int main()
@@ -165,12 +212,14 @@ int main()
         valores_iniciais(dados_discentes, discentes);
     }
     baixar_dados_discentes_txt(dados_discentes, discentes);
-    printf("***********************************************************\n");
+    printf("\n***********************************************************\n");
     printf("Seja bem vindo(a) ao sistema de gerenciamento de discentes!\n");
     printf("***********************************************************\n");
     while (opicao != 7)
     {
         fclose(dados_discentes);
+        printf("\n");
+        printf("*********************************\n");
         printf("Oque deseja fazer?\n");
         printf("1 - Cadastrar discente\n");
         printf("2 - Listar discentes\n");
@@ -179,8 +228,10 @@ int main()
         printf("5 - Remover discente\n");
         printf("6 - Imprimir relatorio\n");
         printf("7 - Sair\n");
-        printf("Digite o numero da opcao desejada: ");
+        printf("*********************************\n");
+        printf("\nDigite o numero da opcao desejada: ");
         scanf("%d", &opicao);
+        printf("\n");
         if (opicao == 1)
         {
             cadastrar_discente(discentes, dados_discentes, num_cadastros);
@@ -195,7 +246,20 @@ int main()
             atualizar_notas(discentes);
             salvar_dados_discentes_txt(discentes, dados_discentes);
         }
+        if (opicao == 4)
+        {
+            atualizar_frequencias(discentes);
+            salvar_dados_discentes_txt(discentes, dados_discentes);
+        }
+        if (opicao == 5)
+        {
+            remove_discente(discentes, num_cadastros);
+            salvar_dados_discentes_txt(discentes, dados_discentes);
+        }
     }
+    printf("\n");
+    printf("********************************************************************\n");
     printf("Obrigado por usar o sistema de gerenciamento de discentes. Ate mais!\n");
+    printf("********************************************************************\n");
     return 0;
 }
