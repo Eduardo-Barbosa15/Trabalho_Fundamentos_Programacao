@@ -57,6 +57,11 @@ void baixar_dados_discentes_txt(FILE* dados_discentes, discente discentes[])
 
 void lista_discentes(discente discentes[])
 {
+    if (discentes[0].nome[0] == ' ')
+    {
+        printf("Nenhum discente cadastrado.\n");
+        return;
+    }
     for (int i = 0; i < 10; i++)
     {            
             printf("Discente: %d\n", i + 1);
@@ -132,8 +137,8 @@ void atualizar_notas(discente discentes[])
         if (discentes[i].matricula == atoi(buffer))
         {
             printf("Digite as novas notas do discente (separadas por espaco): ");
-            scanf("%f %f %f", &discentes[i].notas[0], &discentes[i].notas[1], &discentes[i].notas[2]);
-            printf("Notas do discente %s atualizadas com sucesso.\n", discentes[i].nome);
+            scanf("%f %f %f", &discentes[i - 1].notas[0], &discentes[i - 1].notas[1], &discentes[i -1].notas[2]);
+            printf("Notas do discente %s atualizadas com sucesso.\n", discentes[i -1].nome);
             return;
         }
     }
@@ -160,17 +165,19 @@ int main()
         valores_iniciais(dados_discentes, discentes);
     }
     baixar_dados_discentes_txt(dados_discentes, discentes);
+    printf("***********************************************************\n");
+    printf("Seja bem vindo(a) ao sistema de gerenciamento de discentes!\n");
+    printf("***********************************************************\n");
     while (opicao != 7)
     {
         fclose(dados_discentes);
-        printf("Seja bem vindo(a) ao sistema de gerenciamento de discentes!\n");
         printf("Oque deseja fazer?\n");
         printf("1 - Cadastrar discente\n");
         printf("2 - Listar discentes\n");
         printf("3 - Atualizar notas\n");
         printf("4 - Atualizar frequncias\n");
         printf("5 - Remover discente\n");
-        printf("6 - Imprimir relatório\n");
+        printf("6 - Imprimir relatorio\n");
         printf("7 - Sair\n");
         printf("Digite o numero da opcao desejada: ");
         scanf("%d", &opicao);
@@ -189,5 +196,6 @@ int main()
             salvar_dados_discentes_txt(discentes, dados_discentes);
         }
     }
+    printf("Obrigado por usar o sistema de gerenciamento de discentes. Ate mais!\n");
     return 0;
 }
