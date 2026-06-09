@@ -29,13 +29,14 @@ void valores_iniciais_file(FILE* dados_discentes, discente discentes[], FILE* po
     dados_discentes = fopen("discentes.txt", "w");
     posicoes = fopen("posicoes.txt", "w");
     for (int i = 0; i < 10; i++)
-    {            
-            fprintf(dados_discentes, "%d\n", discentes[i].matricula);
-            fprintf(dados_discentes, "%s\n", discentes[i].nome);
-            fprintf(dados_discentes, "%d\n", discentes[i].num_presencas);
-            fprintf(dados_discentes, "%.2f %.2f %.2f\n", discentes[i].notas[0], discentes[i].notas[1], discentes[i].notas[2]);
-            fgetpos(dados_discentes, &posicao[i]);
-            fprintf(posicoes, "%lld\n", &posicao[i]);
+    {
+        fprintf(dados_discentes, "%d\n", discentes[i].matricula);
+        fprintf(dados_discentes, "%s\n", discentes[i].nome);
+        fprintf(dados_discentes, "%d\n", discentes[i].num_presencas);
+        fprintf(dados_discentes, "%.2f %.2f %.2f\n", discentes[i].notas[0], discentes[i].notas[1], discentes[i].notas[2]);
+        fgetpos(dados_discentes, &posicao[i]);
+        fprintf(posicoes, "%lld\n", posicao[i]);
+            
     }
     fclose(dados_discentes);
     fclose(posicoes);
@@ -47,7 +48,7 @@ void baixar_dados_discentes_txt(FILE* dados_discentes, discente discentes[], fpo
     posicoes = fopen("posicoes.txt", "r");
     char buffer[100];
     int i = 0;
-    while(fscanf(dados_discentes, "%[^\n]\n", buffer) == 1)
+    while(fscanf(dados_discentes, "%[^\n]\n", &buffer) == 1)
     {
         discentes[i].matricula = atoi(buffer);
         strcpy(discentes[i].nome, buffer);
@@ -82,17 +83,20 @@ void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* posic
     char buffer[100];
     dados_discentes = fopen("dados_discentes.txt", "r");
     int j = 0;
-    for(int i = 10; i >= 0; i--)
+    int l = 0;
+    while (l < 10)
     {
-        posicao[i] -= 24;
-        fsetpos(dados_discentes, &posicao[i]);
-        fscanf(dados_discentes, "%s", &buffer);
-        if ('buffer' == '\n')
+
+        fsetpos(dados_discentes, &posicao[l]);
+        fscanf(dados_discentes, "%[^\n]\n", &buffer);
+        if (buffer[0] == ' ')
         {
-            j = i;
+            j = l;
         }
+        l++;
     }
-    if (j == 10)
+    printf("Posicao do novo discente: %d\n", j);
+    if (j == 9)
     {
         printf("Limite de discentes atingido. Nao e possivel cadastrar mais discentes.\n");
         return;
@@ -109,7 +113,7 @@ void cadastrar_discente(discente discentes[], FILE* dados_discentes, FILE* posic
         }
     }
     printf("Digite o nome do discente: ");
-    scanf(" %[^\n]s", discentes[j].nome);
+    scanf(" %[^\n]s", &discentes[j].nome);
     if (discentes[j].nome[0] >= 'a' && discentes[j].nome[0] <= 'z')
     {
         discentes[j].nome[0] -= 32;
