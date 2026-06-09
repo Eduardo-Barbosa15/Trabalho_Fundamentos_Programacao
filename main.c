@@ -154,7 +154,14 @@ void atualizar_frequencias(discente discentes[])
     {
         if (discentes[i].matricula == buffer)
         {
-            discentes[i].num_presencas++;
+            printf("Digite o numero de presencas do discente: ");
+            scanf("%d", &discentes[i].num_presencas);
+            if(discentes[i].num_presencas > 30)
+            {
+                printf("O numero de presencas do discente deveser no maximo 30, digite um valor valido: ");
+                scanf("%d", &discentes[i].num_presencas);
+            }
+            
             printf("Frequencias do discente %s atualizadas com sucesso.\n", discentes[i].nome);
             return;
         }
@@ -191,6 +198,46 @@ void remove_discente(discente discentes[], FILE* num_cadastros)
     }
     printf("Discente nao encontrado, tente novamente.\n");
 }
+
+void imprimir_relatorio(discente discentes[], FILE* num_cadastros)
+{
+    int j;
+    num_cadastros = fopen("num_cadastros.txt", "r");
+    fscanf(num_cadastros, "%d", &j);
+    fclose(num_cadastros);
+    int contador = 0;
+    printf("***********************\n");
+    printf("Relatorio de discentes:\n");
+    printf("***********************\n");
+    printf("Numero de discentes aprovados por nota:\n");
+    if(j == 0)
+    {
+        printf("Nenhum discente cadastrado.\n");
+        return;
+    }
+    for(int i = 0; i < j; i++)
+    {
+        int media_notas = (discentes[i].notas[0] + discentes[i].notas[1] + discentes[i].notas[2]) / 3;
+        if (media_notas >= 7.0 )
+        {
+            contador++;
+        }
+    }
+    printf("%d\n", contador);
+    printf("********************************\n");
+    printf("Numero de discentes reprovados por frequencia:\n");
+    contador = 0;
+    for(int i = 0; i < j; i++)
+    {
+        if (discentes[i].num_presencas < 22.5)
+        {
+            contador++;
+        }
+    }
+    printf("%d\n", contador);
+    printf("********************************\n");
+}
+    
 
 int main()
 {
@@ -255,6 +302,10 @@ int main()
         {
             remove_discente(discentes, num_cadastros);
             salvar_dados_discentes_txt(discentes, dados_discentes);
+        }
+        if (opicao == 6)
+        {
+            imprimir_relatorio(discentes, num_cadastros);
         }
     }
     printf("\n");
